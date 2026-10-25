@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    name: ??? Build
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -39,7 +39,7 @@ jobs:
           retention-days: 7
 
   selenium-tests:
-    name: ? Selenium Tests
+    name: Selenium Tests
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +64,7 @@ jobs:
           retention-days: 30
 
   mobile-tests:
-    name: ? Mobile Tests
+    name: Mobile Tests
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -89,7 +89,7 @@ jobs:
           retention-days: 30
 
   load-tests:
-    name: ? Load Tests
+    name: Load Tests
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -114,7 +114,7 @@ jobs:
           retention-days: 30
 
   security-tests:
-    name: ? Security Tests
+    name: Security Tests
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -146,7 +146,7 @@ jobs:
           retention-days: 30
 
   bundle-reports:
-    name: ? Bundle Reports
+    name: Bundle Reports
     needs: [selenium-tests, mobile-tests, load-tests, security-tests]
     runs-on: ubuntu-latest
     steps:
@@ -174,7 +174,7 @@ jobs:
           retention-days: 30
 
   deploy:
-    name: ? Deploy
+    name: Deploy
     needs: bundle-reports
     runs-on: ubuntu-latest
     steps:
@@ -183,5 +183,5 @@ jobs:
 
       - name: Deploy Status Confirmation
         run: |
-          echo "? All 4 Test Suites, Load Testing & Security Assessment Passed!"
-          echo "?? Enterprise CI/CD Pipeline Completed Successfully."
+          echo "All 4 Test Suites, Load Testing & Security Assessment Passed!"
+          echo "Enterprise CI/CD Pipeline Completed Successfully."
