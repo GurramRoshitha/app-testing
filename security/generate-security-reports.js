@@ -2,6 +2,12 @@ const ExcelJS = require('exceljs');
 const fs = require('fs-extra');
 const path = require('path');
 
+const reportsDir = path.resolve(__dirname, '../reports');
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+
+const secDir = path.resolve(__dirname, '.');
+if (!fs.existsSync(secDir)) fs.mkdirSync(secDir, { recursive: true });
+
 async function generateSecurityAssessment() {
   console.log("??? Running Security Assessment & Generating 4-Sheet Excel Report...");
 

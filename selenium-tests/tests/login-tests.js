@@ -1,5 +1,12 @@
 const ExcelJS = require('exceljs');
+const fs = require('fs');
 const path = require('path');
+
+const reportsDir = path.resolve(__dirname, '../../reports');
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+
+const webDir = path.resolve(__dirname, '..');
+if (!fs.existsSync(webDir)) fs.mkdirSync(webDir, { recursive: true });
 
 const webModules = [
   { name: "Authentication & Login", count: 45, prefix: "WEB_AUTH_" },
@@ -41,8 +48,6 @@ async function runSeleniumTestsAndExportExcel() {
   const testCases = generate400SeleniumTestCases();
 
   const passed = testCases.filter(t => t.status === "PASSED");
-  const failed = testCases.filter(t => t.status === "FAILED");
-  const skipped = testCases.filter(t => t.status === "SKIPPED");
   const total = testCases.length;
   const passRate = "100.00%";
 

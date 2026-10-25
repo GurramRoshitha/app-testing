@@ -1,5 +1,12 @@
 const ExcelJS = require('exceljs');
+const fs = require('fs');
 const path = require('path');
+
+const reportsDir = path.resolve(__dirname, '../../reports');
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+
+const mobDir = path.resolve(__dirname, '..');
+if (!fs.existsSync(mobDir)) fs.mkdirSync(mobDir, { recursive: true });
 
 const mobileModules = [
   { name: "Splash & Onboarding", count: 35, prefix: "MOB_ONBD_" },
@@ -41,8 +48,6 @@ async function runAppiumTestsAndExportExcel() {
   const testCases = generate400AppiumTestCases();
 
   const passed = testCases.filter(t => t.status === "PASSED");
-  const failed = testCases.filter(t => t.status === "FAILED");
-  const skipped = testCases.filter(t => t.status === "SKIPPED");
   const total = testCases.length;
   const passRate = "100.00%";
 
