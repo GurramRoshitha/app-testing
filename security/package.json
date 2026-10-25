@@ -1,0 +1,1 @@
+{"name":"voyage-security-tests","version":"1.0.0","main":"generate-security-reports.js","dependencies":{"exceljs":"^4.4.0","fs-extra":"^11.2.0"}}

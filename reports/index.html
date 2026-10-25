@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage AI - Test & Security Reports Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-report { background-color: #1e293b; border: 1px solid #334155; border-radius: 16px; transition: transform 0.2s, border-color 0.2s; }
+        .card-report:hover { transform: translateY(-4px); border-color: #6366f1; }
+        .badge-passed { background-color: #10b981; color: #fff; }
+        .btn-download { background-color: #6366f1; color: #fff; border-radius: 12px; font-weight: 600; text-decoration: none; display: inline-block; padding: 10px 20px; transition: background-color 0.2s; }
+        .btn-download:hover { background-color: #4f46e5; color: #fff; }
+    </style>
+</head>
+<body class="p-4 p-md-5">
+    <div class="container max-w-6xl">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-white mb-2"><i class="fa-solid fa-vial-circle-check text-primary"></i> Voyage AI - Test Execution & Security Dashboard</h1>
+            <p class="text-slate-400 fs-5">Enterprise Automated Test Cases, Load Performance & Security Assessment Reports</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- 1. Selenium Web Tests -->
+            <div class="col-md-6">
+                <div class="card card-report p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-4 text-info"><i class="fa-solid fa-globe"></i> Selenium Web E2E</span>
+                        <span class="badge badge-passed px-3 py-2 rounded-pill">300 TEST CASES</span>
+                    </div>
+                    <p class="text-slate-300">Complete web functional automation coverage across 11 modules including Auth, Trip AI Generator, Cost Split, and PDF Exporter.</p>
+                    <div class="mt-auto pt-3">
+                        <a href="Selenium_Web_Test_Report.xlsx" class="btn-download w-100 text-center"><i class="fa-solid fa-file-excel me-2"></i> Download Selenium_Web_Test_Report.xlsx</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Appium Mobile Tests -->
+            <div class="col-md-6">
+                <div class="card card-report p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-4 text-primary"><i class="fa-solid fa-mobile-screen-button"></i> Appium Mobile E2E</span>
+                        <span class="badge badge-passed px-3 py-2 rounded-pill">300 TEST CASES</span>
+                    </div>
+                    <p class="text-slate-300">Android native mobile automation coverage across Splash, User ViewModel, Countdown Widget, SharedPreferences Disk Storage & Itineraries.</p>
+                    <div class="mt-auto pt-3">
+                        <a href="Appium_Mobile_Test_Report.xlsx" class="btn-download w-100 text-center"><i class="fa-solid fa-file-excel me-2"></i> Download Appium_Mobile_Test_Report.xlsx</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Performance Load Test -->
+            <div class="col-md-6">
+                <div class="card card-report p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-4 text-warning"><i class="fa-solid fa-bolt"></i> Baseline & Load Testing</span>
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">100 VUs / 1 MIN</span>
+                    </div>
+                    <p class="text-slate-300">System load performance metrics evaluating 100 concurrent virtual users continuously for 1 minute (124 req/sec, Avg Latency: 248ms).</p>
+                    <div class="mt-auto pt-3">
+                        <a href="Performance_Load_Test_Report.xlsx" class="btn-download w-100 text-center bg-warning text-dark"><i class="fa-solid fa-file-excel me-2"></i> Download Performance_Load_Test_Report.xlsx</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Security Assessment -->
+            <div class="col-md-6">
+                <div class="card card-report p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fs-4 text-success"><i class="fa-solid fa-shield-halved"></i> Security Assessment</span>
+                        <span class="badge bg-success px-3 py-2 rounded-pill">SCORE: 92/100</span>
+                    </div>
+                    <p class="text-slate-300">SAST/DAST vulnerability review, API endpoint inventory, dependency scanning, and risk matrix across 4 sheets.</p>
+                    <div class="mt-auto pt-3 d-flex gap-2">
+                        <a href="findings.xlsx" class="btn-download flex-fill text-center bg-success"><i class="fa-solid fa-file-excel me-2"></i> findings.xlsx</a>
+                        <a href="endpoint-inventory.xlsx" class="btn-download flex-fill text-center bg-success"><i class="fa-solid fa-file-excel me-2"></i> endpoint-inventory.xlsx</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 text-slate-500 fs-6">
+            Repository Target: <a href="https://github.com/GurramRoshitha/app-testing" class="text-info text-decoration-none">GurramRoshitha/app-testing</a>
+        </div>
+    </div>
+</body>
+</html>

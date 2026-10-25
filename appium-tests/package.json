@@ -1,0 +1,1 @@
+{"name":"voyage-appium-mobile-tests","version":"1.0.0","description":"Appium Mobile E2E Automation","main":"tests/mobile-tests.js","scripts":{"test":"node tests/mobile-tests.js"},"dependencies":{"exceljs":"^4.4.0"}}
