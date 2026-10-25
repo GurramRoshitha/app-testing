@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Bold Text "TRAVEL" -->
+    <group android:translateX="8" android:translateY="5">
+        <!-- T -->
+        <path android:fillColor="#000000" android:pathData="M15,50 h14 v4 h-5 v15 h-4 v-15 h-5 z" />
+        <!-- R -->
+        <path android:fillColor="#000000" android:pathData="M32,50 h7 c4,0 4,4 4,5 c0,3 -2,4 -3,4 l4,6 h-5 l-3,-5 h-0.5 v5 h-4 z" />
+        <!-- A -->
+        <path android:fillColor="#000000" android:pathData="M46,69 l5,-19 h4 l5,19 h-4 l-1,-4 h-4 l-1,4 z M52,62 h2 l-1,-5 z" />
+        <!-- V -->
+        <path android:fillColor="#000000" android:pathData="M62,50 h5 l3,13 l3,-13 h5 l-6,19 h-4 z" />
+        <!-- E -->
+        <path android:fillColor="#000000" android:pathData="M81,50 h9 v4 h-5 v3 h4 v4 h-4 v4 h5 v4 h-9 z" />
+        <!-- L -->
+        <path android:fillColor="#000000" android:pathData="M94,50 h4 v15 h6 v4 h-10 z" />
+    </group>
+
+    <!-- Pink Airplane -->
+    <path
+        android:fillColor="#D81B60"
+        android:pathData="M75,30 c-5,5 -15,15 -15,15 l5,5 c0,0 10,-10 15,-15 l5,10 l3,-1 l-5,-15 l10,-5 l-1,-3 l-15,5 l-2,-5 z" />
+
+</vector>
