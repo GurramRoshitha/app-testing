@@ -84,8 +84,27 @@ class TripViewModel(application: Application) : AndroidViewModel(application) {
         "alleppey" to listOf("Alleppey Backwaters", "Houseboat cruises", "Alappuzha Beach", "Vembanad Lake")
     )
 
+    private var listenerRegistration: com.google.firebase.firestore.ListenerRegistration? = null
+
     init {
         loadTrips()
+        startListeningToTrips()
+    }
+
+    fun startListeningToTrips() {
+        listenerRegistration?.remove()
+        listenerRegistration = tripService.observeTrips { remoteTrips ->
+            viewModelScope.launch(Dispatchers.Main) {
+                _trips.clear()
+                _trips.addAll(remoteTrips)
+                saveTripsToDisk()
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        listenerRegistration?.remove()
     }
 
     private fun saveTripsToDisk() {

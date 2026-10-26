@@ -8,11 +8,29 @@ import {
   doc,
   query,
   where,
-  setDoc
+  setDoc,
+  onSnapshot
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
 
 class TripService {
+  subscribeToTrips(onTripsChanged) {
+    const userId = auth.currentUser?.uid || "guest_user_123";
+    const q = query(
+      collection(db, "trips"),
+      where("user_id", "==", userId)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const trips = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      trips.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      localStorage.setItem('voyage_trips', JSON.stringify(trips));
+      onTripsChanged(trips);
+    }, (error) => {
+      console.warn("Firestore real-time subscription error:", error);
+    });
+  }
   async createTrip(trip) {
     try {
       const userId = auth.currentUser?.uid || "guest_user_123";

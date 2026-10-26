@@ -43,6 +43,8 @@ const DashboardScreen = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubscribe = () => {};
+
     const loadData = async () => {
       const currentUser = AuthService.getCurrentUser();
       if (!currentUser) {
@@ -56,6 +58,7 @@ const DashboardScreen = () => {
 
       setUser({ ...currentUser, displayName, photoUri });
 
+      // Initial load from local/getTrips
       const tripsResult = await TripService.getTrips();
       if (tripsResult.isSuccess && tripsResult.trips.length > 0) {
         setAllTrips(tripsResult.trips);
@@ -65,11 +68,21 @@ const DashboardScreen = () => {
         setActivePopups(popups);
       }
 
+      // Real-Time Firestore Subscription
+      unsubscribe = TripService.subscribeToTrips((updatedTrips) => {
+        setAllTrips(updatedTrips);
+        syncNotificationsFromTrips(updatedTrips);
+        const popups = checkAndGetActivePopups(updatedTrips);
+        setActivePopups(popups);
+      });
+
       setUnreadCount(getUnreadCount());
       setLoading(false);
     };
 
     loadData();
+
+    return () => unsubscribe();
   }, [navigate]);
 
   const handleDismissPopup = (popupId) => {

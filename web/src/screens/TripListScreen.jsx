@@ -21,6 +21,10 @@ const TripListScreen = () => {
 
   useEffect(() => {
     fetchTrips();
+    const unsubscribe = TripService.subscribeToTrips((updatedTrips) => {
+      setTrips(updatedTrips);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleDelete = async () => {
