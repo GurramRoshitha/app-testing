@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class UserViewModel : ViewModel() {
-    private val authService = AuthService()
-    private val firestore = FirebaseFirestore.getInstance()
+    private val authService by lazy { AuthService() }
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     
     private val _userProfile = mutableStateOf(UserProfile())
     val userProfile: State<UserProfile> = _userProfile
@@ -44,9 +44,13 @@ class UserViewModel : ViewModel() {
     }
 
     init {
-        val currentUser = authService.getCurrentUser()
-        if (currentUser != null) {
-            loadUserProfile(currentUser.uid)
+        try {
+            val currentUser = authService.getCurrentUser()
+            if (currentUser != null) {
+                loadUserProfile(currentUser.uid)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("UserViewModel", "Init user profile load safe error", e)
         }
     }
 
