@@ -13,3 +13,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Node & Build artifacts
+node_modules/
+web/node_modules/
+web/dist/
+dist/
+.env
+.env.local
