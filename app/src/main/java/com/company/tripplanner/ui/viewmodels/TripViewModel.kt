@@ -135,25 +135,24 @@ class TripViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadTrips() {
+        startListeningToTrips()
         viewModelScope.launch {
-            // 1. Instantly restore trips from disk cache so data NEVER vanishes
-            val diskTrips = withContext(Dispatchers.IO) { loadTripsFromDisk() }
-            if (diskTrips.isNotEmpty()) {
-                _trips.clear()
-                _trips.addAll(diskTrips)
+            // 1. Instantly restore trips from disk cache if current memory list is empty
+            if (_trips.isEmpty()) {
+                val diskTrips = withContext(Dispatchers.IO) { loadTripsFromDisk() }
+                if (diskTrips.isNotEmpty()) {
+                    _trips.clear()
+                    _trips.addAll(diskTrips)
+                }
             }
 
-            // 2. Sync with remote server if available
+            // 2. Sync with remote server
             try {
                 val result = tripService.getTrips()
                 val remoteTrips = result.getOrDefault(emptyList())
                 if (remoteTrips.isNotEmpty()) {
-                    val combined = (remoteTrips + diskTrips)
-                        .distinctBy { it.id ?: "${it.name}_${it.dates}" }
-                        .sortedByDescending { it.createdAt }
-
                     _trips.clear()
-                    _trips.addAll(combined)
+                    _trips.addAll(remoteTrips)
                     saveTripsToDisk()
                 }
             } catch (e: Exception) {

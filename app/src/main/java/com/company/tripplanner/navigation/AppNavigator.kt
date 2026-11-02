@@ -150,6 +150,7 @@ fun AppNavigator(themeManager: ThemeManager) {
                     when(action) {
                         "create" -> navController.navigate(Screen.CreateTrip.route)
                         "trips" -> navController.navigate(Screen.TripList.route)
+                        "packing" -> navController.navigate(Screen.PackingChecklist.createRoute(0))
                         "settings" -> navController.navigate(Screen.Settings.route)
                         "favorites" -> navController.navigate(Screen.Favorites.route)
                         "notifications" -> navController.navigate(Screen.Notifications.route)
@@ -166,6 +167,7 @@ fun AppNavigator(themeManager: ThemeManager) {
                 onNavigateBottom = { route ->
                     when(route) {
                         "trips" -> navController.navigate(Screen.TripList.route)
+                        "packing" -> navController.navigate(Screen.PackingChecklist.createRoute(0))
                         "profile" -> navController.navigate(Screen.Profile.route)
                     }
                 },
@@ -286,15 +288,13 @@ fun AppNavigator(themeManager: ThemeManager) {
         }
         composable(Screen.PackingChecklist.route) { backStackEntry ->
             val index = backStackEntry.arguments?.getString("tripIndex")?.toIntOrNull() ?: 0
-            val trip = tripViewModel.trips.getOrNull(index)
-            if (trip != null) {
-                PackingChecklistScreen(
-                    trip = trip,
-                    onBack = { navController.popBackStack() }
-                )
-            } else {
-                ErrorScreen(onRetry = {}, onBackHome = { navController.popBackStack() })
-            }
+            val trip = tripViewModel.trips.getOrNull(index) 
+                ?: tripViewModel.trips.firstOrNull() 
+                ?: com.company.tripplanner.data.models.Trip(name = "General Travel", dates = "")
+            PackingChecklistScreen(
+                trip = trip,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable("budget") {
             BudgetScreen(

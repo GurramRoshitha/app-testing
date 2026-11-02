@@ -14,11 +14,14 @@ import androidx.lifecycle.viewModelScope
 import com.company.tripplanner.data.models.NotificationItem
 import com.company.tripplanner.data.models.Trip
 import com.company.tripplanner.data.models.getEffectiveStatus
-import com.company.tripplanner.ui.screens.calculateDaysRemaining
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class NotificationViewModel(application: Application) : AndroidViewModel(application) {
     private val prefs = application.getSharedPreferences("voyage_notification_prefs", Context.MODE_PRIVATE)
@@ -58,6 +61,14 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    private fun getRecordedEvents(): MutableSet<String> {
+        return prefs.getStringSet("recorded_events_set", emptySet())?.toMutableSet() ?: mutableSetOf()
+    }
+
+    private fun saveRecordedEvents(set: Set<String>) {
+        prefs.edit().putStringSet("recorded_events_set", set).apply()
+    }
+
     fun markAsRead(id: String) {
         val index = _notifications.indexOfFirst { it.id == id }
         if (index != -1) {
@@ -85,114 +96,110 @@ class NotificationViewModel(application: Application) : AndroidViewModel(applica
         saveToDisk()
     }
 
+    private fun calculateDaysRemainingForTrip(datesStr: String): Long? {
+        if (datesStr.isBlank()) return null
+        val parts = datesStr.split("-")
+        val startStr = parts.firstOrNull()?.trim() ?: ""
+
+        val formats = arrayOf(
+            SimpleDateFormat("MMM dd, yyyy", Locale.US),
+            SimpleDateFormat("yyyy-MM-dd", Locale.US),
+            SimpleDateFormat("dd/MM/yyyy", Locale.US),
+            SimpleDateFormat("MM/dd/yyyy", Locale.US)
+        )
+
+        var startDate: Date? = null
+        for (fmt in formats) {
+            if (startDate == null && startStr.isNotEmpty()) {
+                try { startDate = fmt.parse(startStr) } catch (e: Exception) {}
+            }
+        }
+
+        if (startDate == null) return null
+
+        val todayCal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val startCal = Calendar.getInstance().apply {
+            time = startDate
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val diffTime = startCal.timeInMillis - todayCal.timeInMillis
+        return Math.ceil(diffTime.toDouble() / (1000 * 60 * 60 * 24)).toLong()
+    }
+
     fun syncNotificationsWithTrips(trips: List<Trip>) {
         viewModelScope.launch(Dispatchers.Default) {
-            val existingIds = _notifications.map { it.id }.toSet()
+            val recordedEvents = getRecordedEvents()
             val newItems = mutableListOf<NotificationItem>()
 
             trips.forEachIndexed { realIndex, trip ->
+                val tripId = trip.id ?: trip.name
                 val status = trip.getEffectiveStatus()
-                val days = calculateDaysRemaining(trip.dates)
+                val days = calculateDaysRemainingForTrip(trip.dates)
 
-                // 1. Departure Reminders (Today or Tomorrow)
-                if (days == 0L) {
-                    val id = "dept_today_${trip.id ?: trip.name}"
-                    if (!existingIds.contains(id)) {
+                // 1. Trip Start Reminders (0 to 3 days remaining)
+                if (days != null && days in 0L..3L) {
+                    val eventId = "${tripId}_start_$days"
+                    if (!recordedEvents.contains(eventId)) {
+                        recordedEvents.add(eventId)
+                        val (title, message) = when (days) {
+                            0L -> "Your Trip Starts Today!" to "Your trip to ${trip.name} starts today! Have a wonderful journey!"
+                            1L -> "Your Trip Starts Tomorrow!" to "Your trip to ${trip.name} starts tomorrow! Get ready for your adventure!"
+                            2L -> "Your Trip Starts in 2 Days!" to "Your trip to ${trip.name} starts in 2 days!"
+                            else -> "Your Trip Starts in 3 Days!" to "Your trip to ${trip.name} starts in 3 days!"
+                        }
+
                         newItems.add(
                             NotificationItem(
-                                id = id,
+                                id = eventId,
                                 tripId = trip.id,
                                 tripIndex = realIndex,
-                                title = "Departure Today!",
-                                message = "Your trip to ${trip.name} starts today! Have a safe and wonderful journey.",
+                                title = title,
+                                message = message,
                                 type = "DEPARTURE",
-                                timestamp = System.currentTimeMillis()
-                            )
-                        )
-                    }
-                } else if (days == 1L) {
-                    val id = "dept_tomorrow_${trip.id ?: trip.name}"
-                    if (!existingIds.contains(id)) {
-                        newItems.add(
-                            NotificationItem(
-                                id = id,
-                                tripId = trip.id,
-                                tripIndex = realIndex,
-                                title = "Departure Tomorrow!",
-                                message = "Get ready! Your journey to ${trip.name} starts tomorrow.",
-                                type = "DEPARTURE",
-                                timestamp = System.currentTimeMillis()
-                            )
-                        )
-                    }
-                } else if (days != null && days in 2L..7L) {
-                    val id = "upcoming_7d_${trip.id ?: trip.name}"
-                    if (!existingIds.contains(id)) {
-                        newItems.add(
-                            NotificationItem(
-                                id = id,
-                                tripId = trip.id,
-                                tripIndex = realIndex,
-                                title = "Upcoming Journey",
-                                message = "Your journey to ${trip.name} begins in $days days.",
-                                type = "UPCOMING",
                                 timestamp = System.currentTimeMillis()
                             )
                         )
                     }
                 }
 
-                // 2. Status Updates (Completed Trip)
+                // 2. Trip Completion Event
                 if (status == "Completed") {
-                    val id = "status_completed_${trip.id ?: trip.name}"
-                    if (!existingIds.contains(id)) {
+                    val eventId = "${tripId}_completed"
+                    if (!recordedEvents.contains(eventId)) {
+                        recordedEvents.add(eventId)
                         newItems.add(
                             NotificationItem(
-                                id = id,
+                                id = eventId,
                                 tripId = trip.id,
                                 tripIndex = realIndex,
-                                title = "Trip Completed",
-                                message = "Hope you enjoyed your journey to ${trip.name}! Check your past trips anytime.",
+                                title = "Your Trip is Completed!",
+                                message = "Your trip to ${trip.name} is completed! We hope you had a wonderful adventure!",
                                 type = "STATUS",
                                 timestamp = System.currentTimeMillis()
                             )
                         )
                     }
                 }
-
-                // 3. Activity Reminders from Itinerary
-                trip.itinerary.forEach { (day, activities) ->
-                    activities.forEachIndexed { actIdx, act ->
-                        if (act.title.isNotBlank()) {
-                            val id = "act_${trip.id ?: trip.name}_${day}_${actIdx}"
-                            if (!existingIds.contains(id)) {
-                                newItems.add(
-                                    NotificationItem(
-                                        id = id,
-                                        tripId = trip.id,
-                                        tripIndex = realIndex,
-                                        title = "Activity Reminder",
-                                        message = "${act.title} (${act.time}) in ${trip.name}",
-                                        type = "ACTIVITY",
-                                        timestamp = System.currentTimeMillis()
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
             }
 
             if (newItems.isNotEmpty()) {
+                saveRecordedEvents(recordedEvents)
                 viewModelScope.launch(Dispatchers.Main) {
                     _notifications.addAll(0, newItems)
                     _notifications.sortByDescending { it.timestamp }
                     saveToDisk()
 
-                    // Send Android system notification for primary departure/status alerts
-                    newItems.firstOrNull { it.type == "DEPARTURE" || it.type == "UPCOMING" || it.type == "STATUS" }?.let { item ->
-                        sendSystemNotification(item)
-                    }
+                    newItems.firstOrNull()?.let { sendSystemNotification(it) }
                 }
             }
         }

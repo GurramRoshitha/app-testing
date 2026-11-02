@@ -14,8 +14,31 @@ import {
 import { db, auth } from "./firebase";
 
 class TripService {
+  async syncLocalTripsToFirestore() {
+    if (!auth.currentUser) return;
+    const userId = auth.currentUser.uid;
+    try {
+      const localTrips = JSON.parse(localStorage.getItem('voyage_trips') || '[]');
+      const offlineTrips = localTrips.filter(t => t.isLocalOnly);
+      for (const trip of offlineTrips) {
+        if (trip.id) {
+          delete trip.isLocalOnly;
+          const tripData = { ...trip, user_id: userId };
+          await setDoc(doc(db, "trips", trip.id), tripData, { merge: true });
+        }
+      }
+      if (offlineTrips.length > 0) {
+        localStorage.setItem('voyage_trips', JSON.stringify(localTrips));
+      }
+    } catch (e) {
+      console.warn("Auto-sync local trips to Firestore notice:", e);
+    }
+  }
+
   subscribeToTrips(onTripsChanged) {
     const userId = auth.currentUser?.uid || "guest_user_123";
+    this.syncLocalTripsToFirestore();
+
     const q = query(
       collection(db, "trips"),
       where("user_id", "==", userId)
@@ -46,6 +69,7 @@ class TripService {
         await setDoc(doc(db, "trips", tripId), tripData);
       } catch (fbErr) {
         console.warn("Firebase save skipped/offline, saving locally:", fbErr);
+        tripData.isLocalOnly = true;
       }
 
       const existing = JSON.parse(localStorage.getItem('voyage_trips') || '[]');
@@ -73,14 +97,13 @@ class TripService {
         const querySnapshot = await getDocs(q);
         trips = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         trips.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        localStorage.setItem('voyage_trips', JSON.stringify(trips));
+        return { isSuccess: true, trips };
       } catch (e) {
         console.warn("Firestore fetch error, fetching locally:", e);
+        const localTrips = JSON.parse(localStorage.getItem('voyage_trips') || '[]');
+        return { isSuccess: true, trips: localTrips };
       }
-
-      const localTrips = JSON.parse(localStorage.getItem('voyage_trips') || '[]');
-      const combined = [...trips, ...localTrips.filter(lt => !trips.some(t => t.id === lt.id))];
-
-      return { isSuccess: true, trips: combined };
     } catch (error) {
       return { isSuccess: false, error: error.message };
     }
